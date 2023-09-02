@@ -26,6 +26,13 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "changeme")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(int(os.environ.get("DEBUG", 0)))
 
+
+
+INTERNAL_IPS = []
+INTERNAL_IPS_ENV = os.environ.get("INTERNAL_IPS")
+if INTERNAL_IPS_ENV:
+    INTERNAL_IPS.extend(INTERNAL_IPS_ENV.split(","))
+
 ALLOWED_HOSTS = []
 ALLOWED_HOSTS_ENV = os.environ.get("ALLOWED_HOSTS")
 if ALLOWED_HOSTS_ENV:
