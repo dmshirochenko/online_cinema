@@ -134,3 +134,6 @@ dmypy.json
 # Database related
 .DS_Store
 db.sqlite
+
+#Custom Django Folders
+movie_app/static/

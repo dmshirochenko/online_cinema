@@ -16,12 +16,17 @@ ENV UWSGI_HARAKIRI 240
 COPY requirements.txt requirements.txt
 COPY uwsgi/uwsgi.ini uwsgi.ini
 
-RUN apt-get update && apt-get install -y netcat-openbsd
-
-RUN  mkdir -p /opt/app/static/ \
+# Установите зависимости
+RUN  mkdir -p /var/www/static/ \
+     && mkdir -p /var/www/media/ \
+     && mkdir -p /opt/app/static/ \
+     && mkdir -p /opt/app/movies/static/ \
      && mkdir -p /opt/app/media/ \
      && pip install --upgrade pip \
-     && pip install --no-cache-dir -r requirements.txt
+     && pip install -r requirements.txt \
+     && apt-get update  \
+     && apt-get install -y netcat-openbsd
+
 
 COPY . .
 
