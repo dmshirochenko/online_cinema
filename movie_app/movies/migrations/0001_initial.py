@@ -7,77 +7,76 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='FilmWork',
+            name="FilmWork",
             fields=[
-                ('created', models.DateTimeField()),
-                ('modified', models.DateTimeField()),
-                ('id', models.UUIDField(primary_key=True, serialize=False)),
-                ('certificate', models.CharField(blank=True, max_length=512, null=True)),
-                ('file_path', models.CharField(blank=True, max_length=100, null=True)),
-                ('title', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('creation_date', models.DateField(blank=True, null=True, unique=True)),
-                ('rating', models.FloatField(blank=True, null=True)),
-                ('type', models.CharField(max_length=32)),
+                ("created", models.DateTimeField()),
+                ("modified", models.DateTimeField()),
+                ("id", models.UUIDField(primary_key=True, serialize=False)),
+                ("certificate", models.CharField(blank=True, max_length=512, null=True)),
+                ("file_path", models.CharField(blank=True, max_length=100, null=True)),
+                ("title", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("creation_date", models.DateField(blank=True, null=True, unique=True)),
+                ("rating", models.FloatField(blank=True, null=True)),
+                ("type", models.CharField(max_length=32)),
             ],
             options={
-                'db_table': 'film_work',
-                'managed': False,
+                "db_table": "film_work",
+                "managed": False,
             },
         ),
         migrations.CreateModel(
-            name='Genre',
+            name="Genre",
             fields=[
-                ('created', models.DateTimeField()),
-                ('modified', models.DateTimeField()),
-                ('id', models.UUIDField(primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True, null=True)),
+                ("created", models.DateTimeField()),
+                ("modified", models.DateTimeField()),
+                ("id", models.UUIDField(primary_key=True, serialize=False)),
+                ("name", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'genre',
-                'managed': False,
+                "db_table": "genre",
+                "managed": False,
             },
         ),
         migrations.CreateModel(
-            name='GenreFilmWork',
+            name="GenreFilmWork",
             fields=[
-                ('id', models.UUIDField(primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField()),
+                ("id", models.UUIDField(primary_key=True, serialize=False)),
+                ("created_at", models.DateTimeField()),
             ],
             options={
-                'db_table': 'genre_film_work',
-                'managed': False,
+                "db_table": "genre_film_work",
+                "managed": False,
             },
         ),
         migrations.CreateModel(
-            name='Person',
+            name="Person",
             fields=[
-                ('created', models.DateTimeField()),
-                ('modified', models.DateTimeField()),
-                ('id', models.UUIDField(primary_key=True, serialize=False)),
-                ('full_name', models.TextField()),
+                ("created", models.DateTimeField()),
+                ("modified", models.DateTimeField()),
+                ("id", models.UUIDField(primary_key=True, serialize=False)),
+                ("full_name", models.TextField()),
             ],
             options={
-                'db_table': 'person',
-                'managed': False,
+                "db_table": "person",
+                "managed": False,
             },
         ),
         migrations.CreateModel(
-            name='PersonFilmWork',
+            name="PersonFilmWork",
             fields=[
-                ('id', models.UUIDField(primary_key=True, serialize=False)),
-                ('role', models.TextField()),
-                ('created_at', models.DateTimeField()),
+                ("id", models.UUIDField(primary_key=True, serialize=False)),
+                ("role", models.TextField()),
+                ("created_at", models.DateTimeField()),
             ],
             options={
-                'db_table': 'person_film_work',
-                'managed': False,
+                "db_table": "person_film_work",
+                "managed": False,
             },
         ),
     ]
