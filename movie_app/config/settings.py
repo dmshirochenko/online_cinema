@@ -45,6 +45,7 @@ include(
     'components/database.py',
     'components/validation.py',
     'components/templates.py',
+    'components/logging.py'
 ) 
 
 ROOT_URLCONF = 'config.urls'
