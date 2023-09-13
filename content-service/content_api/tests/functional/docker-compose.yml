@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  elastic:
+    image: elasticsearch:7.17.7
+    container_name: elastic-tests
+    restart: always
+    environment:
+      - discovery.type=single-node
+
+  cache:
+    image: redis:6.2-alpine
+    container_name: cache-tests
+    restart: always
+
+  content_api:
+    build: ../../.
+    image: content-image
+    container_name: content_api
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    env_file:
+      - .env
+
+  tests:
+    image: content-image
+    container_name: content-tests
+    entrypoint: >
+      sh -c "pip install -r tests/functional/requirements.txt
+      && export PYTEST_ADDOPTS="--color=yes"
+      && python3 tests/functional/utils/wait_for_es.py
+      && python3 tests/functional/utils/wait_for_redis.py
+      && pytest tests/functional/src -W ignore::DeprecationWarning"
+    env_file:
+      - .env
+
+    depends_on:
+      - elastic
+      - cache
+      - content_api

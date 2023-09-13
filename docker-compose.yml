@@ -1,6 +1,6 @@
 version: '3.9'
-services:
 
+services:
   postgres:
     image: postgres:13
     container_name: postgres
@@ -15,7 +15,73 @@ services:
       retries: 5
     volumes:
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
-      - ~/postgresql/data:/var/lib/postgresql/data/
+      - ~/postgresql/data:/var/lib/postgresql/data
+    networks:
+      - cinema
+
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.2
+    container_name: elastic-content
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema
+
+  cache:
+    image: redis:6.2-alpine
+    container_name: redis-content
+    volumes:
+      - cache:/data
+    networks:
+      - cinema
+  
+
+  etl_service:
+      build: ./content-service/etl
+      container_name: etl-content
+      restart: always
+      env_file:
+        - .env
+      volumes:
+          - ./content-service/etl:/opt/app
+      depends_on:
+        postgres:
+          condition: service_healthy
+        elastic:
+          condition: service_healthy
+      networks:
+        - cinema
+
+  fastapi:
+    build: ./content-service/content_api
+    container_name: service-content
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent ${FASTAPI_HOST}:${FASTAPI_PORT} -H 'X-Request-Id: healthcheck' >/dev/null || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elastic:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    expose:
+      - "80"
+    networks:
+      - cinema
+
 
   django:
     container_name: django
@@ -34,6 +100,8 @@ services:
       - "8000"
     volumes:
       - ./movie_app/static:/opt/app/static:rw
+    networks:
+      - cinema
 
   nginx:
     container_name: nginx
@@ -45,5 +113,17 @@ services:
     depends_on:
       django:
         condition: service_healthy
+      fastapi:
+        condition: service_healthy
     ports:
       - "80:80"
+    networks:
+      - cinema
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+  cinema:
+    external: true
