@@ -14,8 +14,8 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
-      - ~/postgresql/data:/var/lib/postgresql/data
+      - ./postgres_db/db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
+      - ./postgres_instance/data:/var/lib/postgresql/data
     networks:
       - cinema
 

@@ -10,7 +10,7 @@ class SQLiteSettings(BaseSettings):
 
 
 class PostgresSettings(BaseSettings):
-    db: str
+    dbname: str
     user: str
     password: str
     host: str
@@ -18,15 +18,13 @@ class PostgresSettings(BaseSettings):
     options: str = "-c search_path=content"
 
     class Config:
-        env_prefix = "POSTGRES_"
-
-    def dict(self):
-        # Postgres creates database via `POSTGRES_DB` param with docker,
-        # while psycopg2 requires `dbname` parameter
-        params = super().dict()
-        params["dbname"] = params["db"]
-        del params["db"]
-        return params
+        fields = {
+            "dbname": {"env": "POSTGRES_DB"},
+            "user": {"env": "POSTGRES_USER"},
+            "password": {"env": "POSTGRES_PASSWORD"},
+            "host": {"env": "POSTGRES_HOST"},
+            "port": {"env": "POSTGRES_PORT"}
+        }
 
 
 class ElasticSettings(BaseSettings):

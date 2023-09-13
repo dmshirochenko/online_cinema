@@ -6,7 +6,7 @@ chown www-data:www-data /var/log
 
 python manage.py collectstatic --noinput
 
-if [ "${DJANG0_COLECT_MIGRATE}" -eq "1" ]; then
+if [ "${DJANG0_COLLECT_MIGRATE}" -eq "1" ]; then
   echo "Django migration is up"
   python manage.py makemigrations
   python manage.py migrate

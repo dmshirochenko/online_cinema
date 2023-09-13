@@ -138,4 +138,6 @@ db.sqlite
 #Custom Django Folders
 movie_app/static/
 docker-compose-postgres_only.yml
+docker-compose-postgres_only_new.yml
 .env.example
+postgres_instance/

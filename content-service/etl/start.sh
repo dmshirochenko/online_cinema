@@ -7,7 +7,7 @@
 #done
 
 # SQLite -> Postgres
-#python src/load_sqlite.py
+python src/load_sqlite.py
 
 # Wait for Elastic
 while ! nc -z $ES_HOST $ES_PORT; do

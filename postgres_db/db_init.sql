@@ -1,4 +1,5 @@
 CREATE SCHEMA IF NOT EXISTS content;
+SET search_path TO content,public;
 
 CREATE TABLE IF NOT EXISTS content.film_work (
     id uuid PRIMARY KEY,
