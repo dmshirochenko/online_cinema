@@ -22,6 +22,7 @@ class GenreService(BaseService):
         index: name of index for service's queries ('genre')
         validator_cls: data validation class
     """
+
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch, index: str, validator_cls: Type[Genre]):
         super().__init__(redis, elastic, index, validator_cls)
 
@@ -36,13 +37,13 @@ class GenreService(BaseService):
         """
         docs = await self.cache.search_from_storage(index=self._redis_key)
         if not docs:
-            search_body = {'query': {'match_all': {}}}
+            search_body = {"query": {"match_all": {}}}
             docs = await self.elastic.search_from_storage(search_body=search_body)
             if not docs:
                 return None
             await self.cache.put_doc_to_storage(self._redis_key, orjson.dumps(docs))
 
-        return docs['result']
+        return docs["result"]
 
     async def _search_from_elastic(self, query) -> None | list[Genre]:
         try:

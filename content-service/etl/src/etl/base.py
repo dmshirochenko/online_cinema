@@ -4,7 +4,8 @@ from .state_storage import JsonFileStorage, State
 
 
 class ETLManager:
-    """Manager that coordinates ETL Components across processes. """
+    """Manager that coordinates ETL Components across processes."""
+
     def __init__(self, state_path: str):
         self._cnt = JsonFileStorage(state_path)
 
@@ -12,7 +13,7 @@ class ETLManager:
         self._cnt.save_state({"cnt": 0})
 
     def inc_count(self) -> int:
-        """Return current counter value and increment it on disk. """
+        """Return current counter value and increment it on disk."""
         cnt = self._cnt.retrieve_state()["cnt"]
         self._cnt.save_state({"cnt": cnt + 1})
         return cnt
@@ -25,9 +26,7 @@ class ETLBase:
 
 
 class ETLComponent(ETLBase):
-
-    def __init__(self, manager: ETLManager, conf: dict, table: str,
-            batch_size: int = 0):
+    def __init__(self, manager: ETLManager, conf: dict, table: str, batch_size: int = 0):
         """
         Args:
             manager: ETLManager instance.
@@ -38,7 +37,7 @@ class ETLComponent(ETLBase):
         _id = manager.inc_count()
         state_fn = f"state_id_{_id}_{self.__class__.__name__}_{table}.json"
         self.state = State(JsonFileStorage(state_fn))
-                
+
         self.conf = conf
         self.table = table
         self.batch_size = batch_size

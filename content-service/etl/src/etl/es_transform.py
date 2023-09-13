@@ -2,6 +2,7 @@ from pydantic import BaseModel
 
 # Models for validation puproses
 
+
 class FilmworkElastic(BaseModel):
     id: str
     imdb_rating: float | None
@@ -59,14 +60,14 @@ def normalize_filmwork(data: list[dict]) -> dict[str, dict]:
                 "actors": {},
                 "writers": {},
                 "directors": {},
-                "file_path": row["file_path"] if row["file_path"] is not None else '',
-                "movie_type": row["type"] if row["type"] is not None else ''
+                "file_path": row["file_path"] if row["file_path"] is not None else "",
+                "movie_type": row["type"] if row["type"] is not None else "",
             }
 
         fw = filmworks[fw_id]
 
-        fw['genre'].add(row["genre"])
-        fw['genres'][row["genre_id"]] = row["genre"]
+        fw["genre"].add(row["genre"])
+        fw["genres"][row["genre_id"]] = row["genre"]
 
         if row["role"] == "director":
             fw["director"].add(row["person_full_name"])
@@ -113,10 +114,7 @@ def validate_filmwork(data: dict[str, dict]) -> dict[str, dict]:
 def normalize_genre(data: list):
     genres = {}
     for row in data:
-        genres[row[0]] = {
-            "id": row[0],
-            "name": row[1]
-        }
+        genres[row[0]] = {"id": row[0], "name": row[1]}
     return genres
 
 
@@ -125,11 +123,7 @@ def normalize_person(data: list[dict]):
     for row in data:
         p_id = row["person_id"]
 
-        film = {
-            "id": row["id"],
-            "title": row["title"],
-            "imdb_rating": row["rating"]
-        }
+        film = {"id": row["id"], "title": row["title"], "imdb_rating": row["rating"]}
 
         if p_id not in persons:
             persons[p_id] = {
@@ -137,7 +131,7 @@ def normalize_person(data: list[dict]):
                 "full_name": row["person_full_name"],
                 "role": set([row["role"]]),
                 "title_names": set([row["title"]]),
-                "films": [film]
+                "films": [film],
             }
         else:
             persons[p_id]["role"].add(row["role"])

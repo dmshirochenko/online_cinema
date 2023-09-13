@@ -3,8 +3,7 @@ import os
 from multiprocessing import Process
 from time import sleep
 
-from config.settings import (ElasticSettings, JsonStorageSettings,
-                             PostgresSettings)
+from config.settings import ElasticSettings, JsonStorageSettings, PostgresSettings
 from etl.base import ETLManager
 from etl.processes import etl_filmwork, etl_persons, etl_plain
 
@@ -21,11 +20,11 @@ if __name__ == "__main__":
 
     comm_params = (pg_conf, es_conf, etl_manager)
     processes = [
-            Process(target=etl_plain, args=("genre", ("name",), *comm_params)),
-            Process(target=etl_persons, args=("person", "person", True, *comm_params)),
-            Process(target=etl_filmwork, args=("person", "movies", True, *comm_params)),
-            Process(target=etl_filmwork, args=("genre", "movies", True, *comm_params)),
-            Process(target=etl_filmwork, args=("film_work", "movies", False, *comm_params)),
+        Process(target=etl_plain, args=("genre", ("name",), *comm_params)),
+        Process(target=etl_persons, args=("person", "person", True, *comm_params)),
+        Process(target=etl_filmwork, args=("person", "movies", True, *comm_params)),
+        Process(target=etl_filmwork, args=("genre", "movies", True, *comm_params)),
+        Process(target=etl_filmwork, args=("film_work", "movies", False, *comm_params)),
     ]
 
     for p in processes:

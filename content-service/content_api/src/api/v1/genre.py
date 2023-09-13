@@ -22,13 +22,13 @@ class GenreView(BaseView):
 
         self.router = APIRouter()
         self.router.add_api_route(
-            '/{genre_id}',
+            "/{genre_id}",
             self.get_details,
-            methods=['GET'],
+            methods=["GET"],
             dependencies=[Depends(auth_route)],
-            description='Get genre details',
+            description="Get genre details",
         )
-        self.router.add_api_route('/', self.get_all, methods=['GET'], description='Get list of all genres')
+        self.router.add_api_route("/", self.get_all, methods=["GET"], description="Get list of all genres")
 
     async def get_details(
         self,
@@ -43,7 +43,7 @@ class GenreView(BaseView):
         if not genre_list:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=self.not_found_msg)
 
-        return [Genre(id=g['id'], name=g['name']) for g in genre_list]
+        return [Genre(id=g["id"], name=g["name"]) for g in genre_list]
 
 
 view = GenreView(model_cls=Genre, not_found_msg=GENRE_NOT_FOUND)

@@ -20,23 +20,23 @@ def sqlite_context(db_path: str):
     conn.close()
 
 
-def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection,
-        page_size: int=100) -> None:
+def load_from_sqlite(connection: sqlite3.Connection, pg_conn: _connection, page_size: int = 100) -> None:
     """Main method of loading data from SQLite into Postgres"""
     postgres_saver = PostgresSaver(pg_conn)
     sqlite_extractor = SQLiteExtractor(connection)
 
-    for table in ['genre', 'person', 'film_work',
-            'genre_film_work', 'person_film_work']:
+    for table in ["genre", "person", "film_work", "genre_film_work", "person_film_work"]:
         for data in sqlite_extractor.extract_data(table, page_size):
             postgres_saver.save_data(table, data)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pg_conf = PostgresSettings().dict()
     sqlite_conf = SQLiteSettings().dict()
 
-    with sqlite_context(sqlite_conf['db_path']) as sqlite_conn, psycopg2.connect(**pg_conf, cursor_factory=DictCursor) as pg_conn:
+    with sqlite_context(sqlite_conf["db_path"]) as sqlite_conn, psycopg2.connect(
+        **pg_conf, cursor_factory=DictCursor
+    ) as pg_conn:
         load_from_sqlite(sqlite_conn, pg_conn)
-        
+
     logging.info("SQLite -> Postgres loading done.")
