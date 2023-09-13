@@ -1,87 +1,65 @@
 from django.db import models
 
 
-# Create your models here.
 class FilmWork(models.Model):
-    created = models.DateTimeField()
-    modified = models.DateTimeField()
     id = models.UUIDField(primary_key=True)
-    certificate = models.CharField(max_length=512, blank=True, null=True)
-    file_path = models.CharField(max_length=100, blank=True, null=True)
-    title = models.CharField(max_length=255)
+    title = models.TextField()
     description = models.TextField(blank=True, null=True)
-    creation_date = models.DateField(unique=True, blank=True, null=True)
+    creation_date = models.DateField(blank=True, null=True)
     rating = models.FloatField(blank=True, null=True)
-    type = models.CharField(max_length=32)
+    type = models.TextField()
+    file_path = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "film_work"
-        indexes = [
-            models.Index(fields=["title"]),
-            models.Index(fields=["rating"]),
-            models.Index(fields=["creation_date"]),
-        ]
-
-    def __str__(self):
-        return self.title
+        db_table = 'film_work'
 
 
 class Genre(models.Model):
-    created = models.DateTimeField()
-    modified = models.DateTimeField()
     id = models.UUIDField(primary_key=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(unique=True, max_length=64)
     description = models.TextField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "genre"
-        indexes = [
-            models.Index(fields=["name"]),
-        ]
+        db_table = 'genre'
 
 
 class GenreFilmWork(models.Model):
     id = models.UUIDField(primary_key=True)
-    film_work = models.ForeignKey(FilmWork, models.DO_NOTHING, related_name="genres")
-    genre = models.ForeignKey(Genre, models.DO_NOTHING)
-    created_at = models.DateTimeField()
+    genre = models.ForeignKey(Genre, models.DO_NOTHING, related_name='film_works')
+    film_work = models.ForeignKey(FilmWork, models.DO_NOTHING, related_name='genres')
+    created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "genre_film_work"
-        unique_together = (("film_work", "genre"),)
+        db_table = 'genre_film_work'
+        unique_together = (('film_work', 'genre'),)
 
 
 class Person(models.Model):
-    created = models.DateTimeField()
-    modified = models.DateTimeField()
     id = models.UUIDField(primary_key=True)
-    full_name = models.TextField()
-
-    def __str__(self):
-        return self.full_name
+    full_name = models.CharField(unique=True, max_length=64)
+    created_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "person"
-        indexes = [
-            models.Index(fields=["full_name"]),
-        ]
+        db_table = 'person'
 
 
 class PersonFilmWork(models.Model):
     id = models.UUIDField(primary_key=True)
-    role = models.TextField()
-    created_at = models.DateTimeField()
-    film_work = models.ForeignKey(FilmWork, models.DO_NOTHING, related_name="persons")
     person = models.ForeignKey(Person, models.DO_NOTHING)
+    film_work = models.ForeignKey(FilmWork, models.DO_NOTHING, related_name='persons')
+    role = models.CharField(max_length=64, blank=True, null=True)
+    created_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         managed = False
-        db_table = "person_film_work"
-        unique_together = (("film_work", "person", "role"),)
+        db_table = 'person_film_work'
+        unique_together = (('film_work', 'person', 'role'),)
