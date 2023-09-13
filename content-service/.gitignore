@@ -104,7 +104,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
-.vevn
 env/
 venv/
 ENV/
@@ -129,13 +128,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Custom ignorances
 .python-version
-
-# Database related
-.DS_Store
-db.sqlite
-
-#Custom Django Folders
-movie_app/static/
-docker-compose-postgres_only.yml
-.env.example
+.idea/
+venv_admin/
+etl/postgres_to_es/data/*states.json
+etl/postgres_to_es/data/*.csv
+*/.states

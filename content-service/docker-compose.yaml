@@ -1,0 +1,78 @@
+version: '3'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: pg/Dockerfile
+    container_name: db-content
+    restart: always
+    networks:
+      - cinema
+
+  elastic:
+    image: elasticsearch:7.17.7
+    container_name: elastic-content
+    restart: always
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - cinema
+
+  etl_service:
+      build: ./etl
+      container_name: etl-content
+      restart: always
+      volumes:
+          - ./etl:/opt/app
+      depends_on:
+         - db
+         - elastic
+      networks:
+        - cinema
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: redis-content
+    volumes:
+      - cache:/data
+    networks:
+      - cinema
+
+  service:
+     build: ./content_api
+     container_name: service-content
+     restart: always
+     volumes:
+       - ./content_api:/opt/app
+     depends_on:
+       - elastic
+       - etl_service
+       - cache
+     networks:
+       - cinema
+
+  nginx:
+     image: nginx:1.19.2
+     container_name: nginx-content
+     restart: always
+     volumes:
+       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+       - ./nginx/configs:/etc/nginx/conf.d:ro
+     depends_on:
+       - service
+     networks:
+       - cinema
+
+volumes:
+  postgres_data:
+  esdata:
+  cache:
+    driver: local
+
+networks:
+  cinema:
+    external: true
