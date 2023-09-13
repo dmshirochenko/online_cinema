@@ -2,7 +2,7 @@ from functools import lru_cache
 from typing import Type
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.elastic import get_elastic
@@ -27,8 +27,13 @@ class PersonService(BaseService):
         index: name of index for service's queries ('person')
         validator_cls: data validation class
     """
+
     def __init__(
-        self, redis: Redis, elastic: AsyncElasticsearch, index: str, validator_cls: Type[PersonFilms],
+        self,
+        redis: Redis,
+        elastic: AsyncElasticsearch,
+        index: str,
+        validator_cls: Type[PersonFilms],
     ):
         super().__init__(redis, elastic, index, validator_cls)
 
@@ -46,16 +51,16 @@ class PersonService(BaseService):
             return None
 
         res = {
-            'found_number': docs['found_number'],
+            "found_number": docs["found_number"],
             # Convert to PersonDetail view
-            'result': [PersonDetail(**person2persondetail(film)) for film in docs['result']],
+            "result": [PersonDetail(**person2persondetail(film)) for film in docs["result"]],
         }
 
         return res
 
     @staticmethod
     def get_search_query(query: str):
-        return {'match': {'full_name': {'query': query, 'fuzziness': 'auto'}}}
+        return {"match": {"full_name": {"query": query, "fuzziness": "auto"}}}
 
     async def get_films(self, _id: str) -> None | list[PersonFilms]:
         """
@@ -75,6 +80,7 @@ class PersonService(BaseService):
 
 @lru_cache()
 def get_person_service(
-    redis: Redis = Depends(get_redis), elastic: AsyncElasticsearch = Depends(get_elastic),
+    redis: Redis = Depends(get_redis),
+    elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> PersonService:
     return PersonService(redis, elastic, "person", PersonFilms)

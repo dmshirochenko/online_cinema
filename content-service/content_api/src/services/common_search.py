@@ -26,13 +26,15 @@ class SearchService(BaseService):
     """
 
     def __init__(
-        self, redis: Redis, elastic: AsyncElasticsearch, index: str, validator_cls: Type[AbstractModel],
+        self,
+        redis: Redis,
+        elastic: AsyncElasticsearch,
+        index: str,
+        validator_cls: Type[AbstractModel],
     ):
         super().__init__(redis, elastic, index, validator_cls)
 
-    async def search(
-        self, query: str, page_number: int, page_size: int
-    ) -> dict[str, int | list[AbstractModel]] | None:
+    async def search(self, query: str, page_number: int, page_size: int) -> dict[str, int | list[AbstractModel]] | None:
         """
         Search on films using input query and ranging of fields by priority.
 
@@ -43,14 +45,14 @@ class SearchService(BaseService):
         Returns:
             list of films and/or persons or None
         """
-        redis_key = f'{self.index}:{query}?page[number]={page_number}?page[size]={page_size}'
+        redis_key = f"{self.index}:{query}?page[number]={page_number}?page[size]={page_size}"
 
         docs = await self._search_from_cache(redis_key)
         if not docs:
             search_body = {
-                'from': page_size * (page_number - 1),
-                'size': page_size,
-                'query': self.get_search_query(query),
+                "from": page_size * (page_number - 1),
+                "size": page_size,
+                "query": self.get_search_query(query),
             }
             docs = await self._search_from_storage(search_body=search_body)
             if not docs:
@@ -61,9 +63,9 @@ class SearchService(BaseService):
 
     def get_search_query(self, query: str) -> dict:
         return {
-            'multi_match': {
-                'query': query.lower(),
-                'fields': ['title^5', 'description^2', 'actors_names^1', 'full_name^3'],
+            "multi_match": {
+                "query": query.lower(),
+                "fields": ["title^5", "description^2", "actors_names^1", "full_name^3"],
             }
         }
 
@@ -75,27 +77,27 @@ class SearchService(BaseService):
         data = orjson.loads(data_json)
 
         res = []
-        for doc in data['result']:
-            if 'full_name' in doc.keys():
+        for doc in data["result"]:
+            if "full_name" in doc.keys():
                 res.append(Person(**doc).dict())
             else:
                 res.append(Film(**doc).dict())
 
-        res = {'found_number': data['found_number'], 'result': res}
+        res = {"found_number": data["found_number"], "result": res}
 
         return res
 
     async def _search_from_storage(self, search_body: dict) -> dict[str, int | list[Film | Person]] | None:
         try:
-            docs = await self.elastic.storage.search(index=self.index.split(', '), body=search_body)
+            docs = await self.elastic.storage.search(index=self.index.split(", "), body=search_body)
         except NotFoundError:
             return None
 
         res = {
-            'found_number': docs['hits']['total']['value'],
-            'result': [
-                Film(**hit['_source']).dict() if hit['_index'] == 'movies' else Person(**hit['_source']).dict()
-                for hit in docs['hits']['hits']
+            "found_number": docs["hits"]["total"]["value"],
+            "result": [
+                Film(**hit["_source"]).dict() if hit["_index"] == "movies" else Person(**hit["_source"]).dict()
+                for hit in docs["hits"]["hits"]
             ],
         }
 
@@ -104,6 +106,7 @@ class SearchService(BaseService):
 
 @lru_cache()
 def get_search_service(
-    redis: Redis = Depends(get_redis), elastic: AsyncElasticsearch = Depends(get_elastic),
+    redis: Redis = Depends(get_redis),
+    elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> SearchService:
-    return SearchService(redis, elastic, 'movies, person', AbstractModel)
+    return SearchService(redis, elastic, "movies, person", AbstractModel)

@@ -16,7 +16,7 @@ class BaseStorage:
     def retrieve_state(self) -> dict:
         """Load state from the permanent storage."""
         pass
- 
+
 
 class JsonFileStorage(BaseStorage):
     def __init__(self, fn: Optional[str] = None):
@@ -27,29 +27,29 @@ class JsonFileStorage(BaseStorage):
         conf = JsonStorageSettings()
         if not os.path.exists(conf.dir_path):
             os.makedirs(conf.dir_path)
-        
+
         if fn is None:
             self.file_path = conf.get_path()
-        else: 
+        else:
             self.file_path = os.path.join(conf.dir_path, fn)
 
         if not os.path.exists(self.file_path):
-            with open(self.file_path, 'w') as f:
+            with open(self.file_path, "w") as f:
                 json.dump({}, f)
-        
+
     def save_state(self, state: dict) -> None:
         with open(self.file_path, "r") as f:
             data = json.load(f)
-            
+
         for k, v in state.items():
             data[k] = v
-           
+
         with open(self.file_path, "w") as f:
             json.dump(data, f)
-    
-    def retrieve_state(self) -> dict | None: 
+
+    def retrieve_state(self) -> dict | None:
         with open(self.file_path, "r") as f:
-            data = json.load(f) 
+            data = json.load(f)
         return data if len(data) else None
 
 
@@ -60,7 +60,7 @@ class State:
 
     def __init__(self, storage: BaseStorage):
         self.storage = storage
-        
+
         self.state = self.storage.retrieve_state()
         if self.state is None:
             self.state = {}

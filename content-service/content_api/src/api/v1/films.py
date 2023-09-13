@@ -18,55 +18,58 @@ class FilmView(BaseView):
 
         self.router = APIRouter()
         self.router.add_api_route(
-            '/',
+            "/",
             self.popular_films,
-            methods=['GET'],
+            methods=["GET"],
             response_model=ResponseModel,
-            description='Get the most popular film with filtering by genre',
+            description="Get the most popular film with filtering by genre",
         )
         self.router.add_api_route(
-            '/search',
+            "/search",
             self.search,
-            methods=['GET'],
+            methods=["GET"],
             response_model=ResponseModel,
-            description='Get film from word searching query (in title, description, genre, actors, director',
+            description="Get film from word searching query (in title, description, genre, actors, director",
         )
         self.router.add_api_route(
             "/all_films",
             self.get_all_films,
-            methods=['GET'],
+            methods=["GET"],
             response_model=ResponseModel,
-            description='Get all films on resource',
+            description="Get all films on resource",
         )
         self.router.add_api_route(
-            '/{film_id}',
+            "/{film_id}",
             self.film_details,
-            methods=['GET'],
+            methods=["GET"],
             response_model=FilmDetails | list[Film],
             dependencies=[Depends(auth_route)],
-            description='Get details about film by film_id and films of the same genres',
+            description="Get details about film by film_id and films of the same genres",
         )
 
     async def popular_films(
         self,
-        sort_imdb: SortField | None = Query(
-            default=None, alias='sort', description='Ascending or descending order sorting',
+        sort_imdb: SortField
+        | None = Query(
+            default=None,
+            alias="sort",
+            description="Ascending or descending order sorting",
         ),
         pagination: PaginationParams = Depends(PaginationParams),
-        genre_filter: uuid.UUID | None = Query(default=None, alias='filter[genre]', description='Genre id'),
+        genre_filter: uuid.UUID | None = Query(default=None, alias="filter[genre]", description="Genre id"),
         film_service: FilmService = Depends(get_film_service),
     ) -> ResponseModel:
-        films_res = await film_service.sort_by_rating(sort_imdb, 
-                pagination.page_number,
-                pagination.page_size, genre_filter=genre_filter)
+        films_res = await film_service.sort_by_rating(
+            sort_imdb, pagination.page_number, pagination.page_size, genre_filter=genre_filter
+        )
         if not films_res:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail=FILMS_NOT_FOUND)
 
         res = {
-            'page_number': pagination.page_number,
-            'page_size': pagination.page_size,
-            'found_number': films_res['found_number'],
-            'result': [Film(**film) for film in films_res['result']],
+            "page_number": pagination.page_number,
+            "page_size": pagination.page_size,
+            "found_number": films_res["found_number"],
+            "result": [Film(**film) for film in films_res["result"]],
         }
         return ResponseModel(**res)
 
@@ -76,13 +79,16 @@ class FilmView(BaseView):
         pagination: PaginationParams = Depends(PaginationParams),
         film_service: FilmService = Depends(get_film_service),
     ) -> ResponseModel:
-        return await super().search(query,
-                pagination.page_number, pagination.page_size, film_service)
+        return await super().search(query, pagination.page_number, pagination.page_size, film_service)
 
     async def film_details(
         self,
         film_id: uuid.UUID,
-        genre_filter: bool = Query(default=False, alias='filter[genre]', description='Get films with the same genre',),
+        genre_filter: bool = Query(
+            default=False,
+            alias="filter[genre]",
+            description="Get films with the same genre",
+        ),
         service: FilmService = Depends(get_film_service),
     ) -> FilmDetails | list[Film]:
         film = await super().get_details(film_id, service, self.model_cls)
@@ -94,16 +100,16 @@ class FilmView(BaseView):
         return film
 
     async def get_all_films(
-            self,
-            pagination: PaginationParams = Depends(PaginationParams),
-            film_service: FilmService = Depends(get_film_service),
+        self,
+        pagination: PaginationParams = Depends(PaginationParams),
+        film_service: FilmService = Depends(get_film_service),
     ) -> int:
         films = await film_service.get_all_films(pagination.page_number, pagination.page_size)
         res = {
             "page_number": pagination.page_number,
             "page_size": pagination.page_size,
             "found_number": films["found_number"],
-            "result": [Film(**film) for film in films['result']],
+            "result": [Film(**film) for film in films["result"]],
         }
         return ResponseModel(**res)
 

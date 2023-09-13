@@ -27,7 +27,7 @@ tags_metadata = [
     {
         "name": "search",
         "description": "Common search to find the most similar items in elastic",
-    }
+    },
 ]
 
 
@@ -41,9 +41,7 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup():
-    redis.redis = await aioredis.create_redis_pool(
-        (redis_cfg.host, redis_cfg.port), minsize=10, maxsize=20
-    )
+    redis.redis = await aioredis.create_redis_pool((redis_cfg.host, redis_cfg.port), minsize=10, maxsize=20)
     elastic.es = AsyncElasticsearch(**elastic_cfg.dict())
 
 

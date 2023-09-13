@@ -1,7 +1,7 @@
 import logging
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Generator, Tuple
+from typing import Generator
 
 import psycopg2
 from psycopg2.extensions import connection as _connection
@@ -25,10 +25,11 @@ def pg_context(dsl_params: dict):
 
 
 class PostgresProducer(ETLComponent):
-    """Produce batch of ids from the specified table. """
+    """Produce batch of ids from the specified table."""
 
-    def __init__(self, manager: ETLManager, conf: dict, table: str,
-            extract_sql_fields: tuple[str]=(), batch_size: int=100):
+    def __init__(
+        self, manager: ETLManager, conf: dict, table: str, extract_sql_fields: tuple[str] = (), batch_size: int = 100
+    ):
         """
         Args:
             manager: ETLManager instance.
@@ -67,15 +68,18 @@ class PostgresProducer(ETLComponent):
             cur = conn.cursor()
 
             modified_from = self._restore_state(conn)
-            fields = ','.join(['id'] + self._extract_sql_fields + ['updated_at'])
+            fields = ",".join(["id"] + self._extract_sql_fields + ["updated_at"])
 
-            cur.execute(f"""
+            cur.execute(
+                f"""
             SELECT {fields}
             FROM content.{self.table}
             WHERE updated_at >= %s
             ORDER BY updated_at
             LIMIT {self.batch_size};
-            """, (modified_from,))
+            """,
+                (modified_from,),
+            )
             data = cur.fetchall()
 
         self._finished = len(data) != self.batch_size
@@ -106,8 +110,7 @@ class PostgresEnricher(ETLComponent):
     Enriches given list of ids selecting corresponding filmwork items.
     """
 
-    def __init__(self, manager: ETLManager, conf, table: str,
-            batch_size: int=100):
+    def __init__(self, manager: ETLManager, conf, table: str, batch_size: int = 100):
         super().__init__(manager, conf, table, batch_size)
 
     @backoff(logging)
@@ -117,7 +120,7 @@ class PostgresEnricher(ETLComponent):
             pg_conn: Postgres connecton.
             ids: ids from specified table to enrich with filmwork.
         Return
-        """ 
+        """
         ids = [row[0] for row in data]
         ids = self._restore_state(ids)
 
@@ -134,7 +137,7 @@ class PostgresEnricher(ETLComponent):
             while batch := cur.fetchmany(self.batch_size):
                 state_ids = ids[self.batch_size:]
                 self.state.set_state("state", state_ids)
-                yield [row[0] for row in batch] 
+                yield [row[0] for row in batch]
 
 
 class PostgresMerger(ETLComponent):
@@ -181,7 +184,7 @@ class PostgresMerger(ETLComponent):
 
             cur.execute(query, (tuple(state_film_ids),))
             raw_data = cur.fetchall()
-            
+
         fw_data = [
             {
                 "id": row[0],
@@ -196,7 +199,7 @@ class PostgresMerger(ETLComponent):
                 "person_full_name": row[9],
                 "genre_id": row[10],
                 "genre": row[11],
-                "file_path": row[12]
+                "file_path": row[12],
             }
             for row in raw_data
         ]
@@ -245,7 +248,7 @@ class PostgresPersonMerger(ETLComponent):
             """
             cur.execute(query, (tuple(state_person_ids),))
             raw_data = cur.fetchall()
-            
+
         person_data = [
             {
                 "person_id": row[0],

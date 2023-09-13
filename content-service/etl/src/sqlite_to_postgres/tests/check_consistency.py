@@ -29,10 +29,7 @@ def test_table_sizes(sqlite_conn, pg_conn) -> None:
         cur_pg.execute(f"SELECT COUNT(1) FROM content.{table};")
         n_pg = cur_pg.fetchone()["count"]
 
-        msg = (
-            f"Sizes mistamtch for table {table} between "
-            "SQLite and Pg: {n_sqlite} vs. {n_pg}."
-        )
+        msg = f"Sizes mistamtch for table {table} between " "SQLite and Pg: {n_sqlite} vs. {n_pg}."
         assert n_sqlite == n_pg, msg
 
     logging.info("Test for tabel sizes - OK.")
@@ -81,8 +78,6 @@ if __name__ == "__main__":
         "host": "127.0.0.1",
         "port": 5432,
     }
-    with sqlite3.connect("db.sqlite") as sqlite_conn, psycopg2.connect(
-        **dsl, cursor_factory=RealDictCursor
-    ) as pg_conn:
+    with sqlite3.connect("db.sqlite") as sqlite_conn, psycopg2.connect(**dsl, cursor_factory=RealDictCursor) as pg_conn:
         test_table_sizes(sqlite_conn, pg_conn)
         test_table_content(sqlite_conn, pg_conn)

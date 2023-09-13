@@ -3,11 +3,10 @@ from functools import wraps
 from typing import Generator
 
 
-def backoff(logging, start_sleep_time: float=0.1, factor: int=2,
-        border_sleep_time: int=10):
+def backoff(logging, start_sleep_time: float = 0.1, factor: int = 2, border_sleep_time: int = 10):
     """
     Function to call decorated function after some time interval in case
-    of an exception. Uses an exponential time interval growth until it 
+    of an exception. Uses an exponential time interval growth until it
     reaches given upper waiting interval.
 
     Args:
@@ -18,6 +17,7 @@ def backoff(logging, start_sleep_time: float=0.1, factor: int=2,
 
     Returns: decorated function returned object.
     """
+
     def exponential_backoff() -> Generator[float, None, None]:
         time_wait = start_sleep_time
         while True:

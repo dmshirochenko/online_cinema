@@ -2,7 +2,7 @@ import uuid
 from http import HTTPStatus
 from typing import Type
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from core.messages import PERSON_FILMS_NOT_FOUND, PERSONS_NOT_FOUND
@@ -20,26 +20,26 @@ class PersonView(BaseView):
 
         self.router = APIRouter()
         self.router.add_api_route(
-            '/search',
+            "/search",
             self.search,
-            methods=['GET'],
+            methods=["GET"],
             response_model=ResponseModel,
-            description='Search person by their names',
+            description="Search person by their names",
         )
         self.router.add_api_route(
-            '/{person_id}',
+            "/{person_id}",
             self.get_details,
-            methods=['GET'],
+            methods=["GET"],
             response_model=Person,
             dependencies=[Depends(auth_route)],
-            description='Get person details',
+            description="Get person details",
         )
         self.router.add_api_route(
-            '/{person_id}/films',
+            "/{person_id}/films",
             self.get_films,
-            methods=['GET'],
+            methods=["GET"],
             response_model=list[Film],
-            description='Get list of films that include given person',
+            description="Get list of films that include given person",
         )
 
     async def search(
@@ -48,9 +48,7 @@ class PersonView(BaseView):
         pagination: PaginationParams = Depends(PaginationParams),
         person_service: PersonService = Depends(get_person_service),
     ) -> ResponseModel:
-        return await super().search(query, 
-                pagination.page_number, 
-                pagination.page_size, person_service)
+        return await super().search(query, pagination.page_number, pagination.page_size, person_service)
 
     async def get_details(
         self,
@@ -61,7 +59,9 @@ class PersonView(BaseView):
         return await super().get_details(person_id, service, valid_cls)
 
     async def get_films(
-        self, person_id: uuid.UUID, person_service: PersonService = Depends(get_person_service),
+        self,
+        person_id: uuid.UUID,
+        person_service: PersonService = Depends(get_person_service),
     ):
         films = await person_service.get_films(str(person_id))
         if not films:

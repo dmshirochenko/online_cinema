@@ -23,11 +23,11 @@ class ElasticLoader(ETLComponent):
         super().__init__(manager, conf, index)
         self.index = index
 
-        host, port = conf['host'], conf['port']
+        host, port = conf["host"], conf["port"]
         self.es = elasticsearch.Elasticsearch(f"{host}:{port}", timeout=300)
 
         # Create index if needed
-        self._check_index(conf['scheme_path'][index])
+        self._check_index(conf["scheme_path"][index])
 
     @backoff(logging)
     def load_batch(self, data: dict[str, dict]) -> None:
@@ -44,13 +44,13 @@ class ElasticLoader(ETLComponent):
             bulk_data.append(_data)
 
         es_response = self.es.bulk(index=self.index, body=bulk_data)
-        if es_response['errors']:
+        if es_response["errors"]:
             logging.error(f"Error during ES update: {es_response}")
 
         self.state.set_state("data", {})
 
     def _check_index(self, path: str) -> None:
-        """Check if index exists and creates it if necessary. """
+        """Check if index exists and creates it if necessary."""
         if not self.es.indices.exists(index=self.index):
             with open(path, "r") as f:
                 scheme = json.load(f)
@@ -64,13 +64,13 @@ class ElasticLoader(ETLComponent):
             state_data = data
         else:
             state_data.update(data)
-            self.state.set_state("data", state_data) 
+            self.state.set_state("data", state_data)
 
         return state_data
 
 
 class ElasticTransformer:
-    """Transforms given data to ES compatible format. """
+    """Transforms given data to ES compatible format."""
 
     def __init__(self, table: str):
         self.norm_func = make_normalizer(table)

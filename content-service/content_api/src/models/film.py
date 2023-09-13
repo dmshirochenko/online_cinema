@@ -9,12 +9,12 @@ class Film(AbstractModel):
 
 
 class FilmDetails(Film):
-    movie_type: str = 'movie'
-    description: str = ''
+    movie_type: str = "movie"
+    description: str = ""
     imdb_rating: float = 0.0
-    film_rating: str = ''
+    film_rating: str = ""
     genres: list[Genre] = []
     actors: list[Person] = []
     writers: list[Person] = []
     directors: list[Person] = []
-    file_path: str = ''
+    file_path: str = ""

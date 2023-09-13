@@ -21,6 +21,7 @@ class AbstractStorage(ABC):
         index: name of index (index or key)
         validator_cls: data validation class
     """
+
     def __init__(self, storage: Any, index: str, validator_cls: Type[AbstractModel]):
         self.storage = storage
         self.index = index
@@ -81,7 +82,7 @@ class ElasticStorage(AbstractStorage):
         except NotFoundError:
             return None
 
-        return validator_cls(**doc['_source']) if doc else None
+        return validator_cls(**doc["_source"]) if doc else None
 
     async def put_doc_to_storage(self, index: str, doc: Any) -> None:
         pass
@@ -98,26 +99,29 @@ class ElasticStorage(AbstractStorage):
         Returns:
             dictionary with results and number of found items
         """
-        if not hasattr(kwargs, 'validator_cls'):
+        if not hasattr(kwargs, "validator_cls"):
             validator_cls = self.validator_cls
         else:
-            validator_cls = kwargs['validator_cls']
+            validator_cls = kwargs["validator_cls"]
 
         try:
-            doc = await self.storage.search(index=self.index, body=kwargs['search_body'],)
+            doc = await self.storage.search(
+                index=self.index,
+                body=kwargs["search_body"],
+            )
         except NotFoundError:
             return None
 
         results = []
-        for hit in doc['hits']['hits']:
+        for hit in doc["hits"]["hits"]:
             try:
-               results.append(validator_cls(**hit["_source"]).dict())
+                results.append(validator_cls(**hit["_source"]).dict())
             except pydantic.error_wrappers.ValidationError:
                 logging.error(f"Couldn't validate the following data: {hit['_source']}")
 
         return {
-            'found_number': doc["hits"]["total"]["value"],
-            'result': results,
+            "found_number": doc["hits"]["total"]["value"],
+            "result": results,
         }
 
 
@@ -157,16 +161,16 @@ class RedisStorage(AbstractStorage):
             dictionary with results and number of found items
         """
 
-        if not hasattr(kwargs, 'validator_cls'):
+        if not hasattr(kwargs, "validator_cls"):
             validator_cls = self.validator_cls
         else:
-            validator_cls = kwargs['validator_cls']
-        data_json = await self.storage.get(kwargs['index'])
+            validator_cls = kwargs["validator_cls"]
+        data_json = await self.storage.get(kwargs["index"])
         if not data_json:
             return None
 
         data = orjson.loads(data_json)
 
-        res = {'found_number': data['found_number'], 'result': [validator_cls(**doc).dict() for doc in data['result']]}
+        res = {"found_number": data["found_number"], "result": [validator_cls(**doc).dict() for doc in data["result"]]}
 
         return res

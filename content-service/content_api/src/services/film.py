@@ -31,7 +31,11 @@ class FilmService(BaseService):
     """
 
     def __init__(
-        self, redis: Redis, elastic: AsyncElasticsearch, index: str, validator_cls: Type[Film],
+        self,
+        redis: Redis,
+        elastic: AsyncElasticsearch,
+        index: str,
+        validator_cls: Type[Film],
     ):
         super().__init__(redis, elastic, index, validator_cls)
 
@@ -50,10 +54,10 @@ class FilmService(BaseService):
         Returns:
             list of films with details in FilmDetails model format or None
         """
-        sort_val = 'no_sort' if sort_val is None else sort_val.name
-        genre_val = 'no_filter' if genre_filter is None else genre_filter
+        sort_val = "no_sort" if sort_val is None else sort_val.name
+        genre_val = "no_filter" if genre_filter is None else genre_filter
 
-        redis_key = f'sort={sort_val}?page[number]={page_number}?page[size]={page_size}?genre_id={genre_val}'
+        redis_key = f"sort={sort_val}?page[number]={page_number}?page[size]={page_size}?genre_id={genre_val}"
         docs = await self.cache.search_from_storage(index=redis_key, validator_cls=FilmDetails)
 
         if not docs:
@@ -69,20 +73,20 @@ class FilmService(BaseService):
     async def _sort_by_rating_elastic(
         self, sort_val: str, page_size: int, page_number: int, genre_id: uuid.UUID | None
     ) -> dict[str, int | list[FilmDetails]] | None:
-        body = {'from': page_size * (page_number - 1), 'size': page_size, 'query': {'match_all': {}}}
+        body = {"from": page_size * (page_number - 1), "size": page_size, "query": {"match_all": {}}}
 
         if sort_val in SortField._member_map_.keys():
-            body.update({'sort': [{'imdb_rating': sort_val}]})
+            body.update({"sort": [{"imdb_rating": sort_val}]})
 
         if genre_id is not None:
-            body['query'] = {
-                'bool': {
-                    'must': [
-                        {'bool': {'must': [{'match_all': {}}]}},
+            body["query"] = {
+                "bool": {
+                    "must": [
+                        {"bool": {"must": [{"match_all": {}}]}},
                         {
-                            'nested': {
-                                'path': 'genres',
-                                'query': {'bool': {'should': [{'match': {'genres.id': genre_id}}]}},
+                            "nested": {
+                                "path": "genres",
+                                "query": {"bool": {"should": [{"match": {"genres.id": genre_id}}]}},
                             }
                         },
                     ]
@@ -91,9 +95,7 @@ class FilmService(BaseService):
 
         return await self.elastic.search_from_storage(search_body=body, validator_cls=FilmDetails)
 
-    async def filter_by_genre(
-        self, film_list: list[Film], genre_filter: uuid.UUID
-    ) -> list[Film]:
+    async def filter_by_genre(self, film_list: list[Film], genre_filter: uuid.UUID) -> list[Film]:
         """
         Filter films by genre.
 
@@ -124,7 +126,12 @@ class FilmService(BaseService):
         Returns:
             dict of search body for elastic query
         """
-        return {'multi_match': {'query': query.lower(), 'fields': ['title^3', 'description^1'],}}
+        return {
+            "multi_match": {
+                "query": query.lower(),
+                "fields": ["title^3", "description^1"],
+            }
+        }
 
     async def get_films_by_genre(self, film: FilmDetails) -> list[Film] | None:
         """
@@ -135,7 +142,7 @@ class FilmService(BaseService):
         Returns:
             list of films in Film model format or None
         """
-        redis_key = f'{film.id}_similar_genre'
+        redis_key = f"{film.id}_similar_genre"
 
         docs = await self.cache.search_from_storage(index=redis_key)
         if not docs:
@@ -144,7 +151,7 @@ class FilmService(BaseService):
                 return None
             await self.cache.put_doc_to_storage(redis_key, orjson.dumps(docs))
 
-        return docs['result']
+        return docs["result"]
 
     async def _get_films_by_genre_elastic(self, film: FilmDetails) -> dict[str, int | Film] | None:
         res_list = []
@@ -156,25 +163,11 @@ class FilmService(BaseService):
                         "query": {
                             "bool": {
                                 "must": [
-                                    {
-                                        "bool": {
-                                            "must_not": [{"match": {"id": film.id}}]
-                                        }
-                                    },
+                                    {"bool": {"must_not": [{"match": {"id": film.id}}]}},
                                     {
                                         "nested": {
                                             "path": "genres",
-                                            "query": {
-                                                "bool": {
-                                                    "should": [
-                                                        {
-                                                            "match": {
-                                                                "genres.name": genre.name
-                                                            }
-                                                        }
-                                                    ]
-                                                }
-                                            },
+                                            "query": {"bool": {"should": [{"match": {"genres.name": genre.name}}]}},
                                         }
                                     },
                                 ]
@@ -183,23 +176,25 @@ class FilmService(BaseService):
                     },
                 )
                 ids = [f.id for f in res_list]
-                for hit in docs['hits']['hits']:
-                    res_film = self.validator_cls(**hit['_source']).dict()
+                for hit in docs["hits"]["hits"]:
+                    res_film = self.validator_cls(**hit["_source"]).dict()
                     if res_film.id not in ids:
                         res_list.append(res_film)
         except NotFoundError:
             return None
 
-        res = {'found_number': len(res_list), 'result': res_list}
+        res = {"found_number": len(res_list), "result": res_list}
 
         return res
 
     async def get_all_films(self, page_number: int, page_size: int):
-        body = {'from': page_size * (page_number - 1), 'size': page_size, 'query': {'match_all': {}}}
+        body = {"from": page_size * (page_number - 1), "size": page_size, "query": {"match_all": {}}}
         return await self.elastic.search_from_storage(search_body=body, validator_cls=FilmDetails)
+
 
 @lru_cache()
 def get_film_service(
-    redis: Redis = Depends(get_redis), elastic: AsyncElasticsearch = Depends(get_elastic),
+    redis: Redis = Depends(get_redis),
+    elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
-    return FilmService(redis, elastic, 'movies', Film)
+    return FilmService(redis, elastic, "movies", Film)
