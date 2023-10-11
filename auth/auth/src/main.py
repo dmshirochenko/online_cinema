@@ -52,7 +52,6 @@ def create_app():
         # Basic example; you may want to add database checks, etc.
         return jsonify(status="OK", code=200), 200
 
-
     return app
 
 
