@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  db_users:
+    image: postgres:13
+    container_name: db_users
+    restart: always
+    networks:
+      - cinema
+    env_file:
+      - .env.example
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: cache
+    networks:
+      - cinema
+
+  auth:
+    build: ./auth
+    image: auth-image
+    container_name: auth
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    env_file:
+      - .env
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db_users
+    networks:
+      - cinema
+
+networks:
+  cinema:
+    external: true

@@ -1,0 +1,65 @@
+version: '3'
+
+services:
+  db_users:
+    image: postgres:13
+    container_name: db_users
+    restart: always
+    env_file:
+      - .env_test
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: cache
+
+  elastic:
+    image: elasticsearch:7.17.7
+    container_name: elastic
+    restart: always
+    environment:
+      - discovery.type=single-node
+
+  content_api:
+    build: ../../../content_app/content_api
+    image: content-image
+    container_name: content_api
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    depends_on:
+      - elastic
+    env_file:
+      - .env_test
+
+  auth:
+    build: ../.
+    image: auth-image
+    container_name: auth
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    env_file:
+      - .env_test
+    depends_on:
+      - db_users
+
+  tests:
+    image: auth-image
+    container_name: auth-tests
+    entrypoint: >
+      sh -c "pip install -r tests/requirements.txt
+      && python3 tests/utils/wait_for_redis.py
+      && python3 tests/utils/wait_for_es.py
+      && export PYTEST_ADDOPTS='--color=yes'
+      && python -m pytest tests/src -W ignore::DeprecationWarning" -rx
+    env_file:
+      - .env_test
+
+    depends_on:
+      - db_users
+      - content_api
+      - elastic
+      - cache
+      - auth
+
