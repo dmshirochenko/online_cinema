@@ -3,6 +3,8 @@ from flasgger import Swagger
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask import jsonify
+
 
 from db.users import init_db
 from views.auth.v1.auth import auth as auth_v1
@@ -44,6 +46,12 @@ def create_app():
     app.app_context().push()
 
     jwt.init_app(app)
+
+    @app.route("/auth/health", methods=["GET"])
+    def health_check():
+        # Basic example; you may want to add database checks, etc.
+        return jsonify(status="OK", code=200), 200
+
 
     return app
 

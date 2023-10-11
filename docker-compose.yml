@@ -17,7 +17,7 @@ services:
       retries: 5
     volumes:
       - ./postgres_db/db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
-      - ./postgres_instance/data:/var/lib/postgresql/data
+      - ./docker_volumes/postgres_instance/data:/var/lib/postgresql/data
     networks:
       - cinema
 
@@ -142,6 +142,11 @@ services:
       - "5001:5000"
     depends_on:
       - postgres_auth
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/auth/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     networks:
       - cinema
 
@@ -156,6 +161,8 @@ services:
       django:
         condition: service_healthy
       fastapi:
+        condition: service_healthy
+      auth:
         condition: service_healthy
     ports:
       - "80:80"
