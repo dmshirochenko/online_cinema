@@ -1,0 +1,7 @@
+clickhouse-driver==0.2.6
+kafka-python==2.0.2
+pydantic==1.10.7
+python-dotenv==1.0.0
+pytz==2023.3
+typing-extensions==4.6.0
+tzlocal==5.0.1

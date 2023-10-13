@@ -1,0 +1,33 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+
+title [Container] Online Cinema System
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System_Boundary(c1, "Online Cinema System") {
+    Container(movie, "MOVIE App", "", "Provides online cinema functionality via a JSON/HTTPS API")
+    Container(ugc, "UGC App", "", "Provides users activity functionality via a JSON/HTTPS API")
+    Container(auth, "AUTH App", "", "Provides authorization functionality via a JSON/HTTPS API")
+    ContainerDb(movie_db, "Movie Storages", "", "Stores all information about movies content, searching, etc.")
+    ContainerDb(ugc_db, "UGC Storages", "", "Stores all information about user activity, reviews, etc.")
+    ContainerDb(auth_db, "Auth Storages", "", "Stores user registration information, access logs, user roles, etc.")
+}
+
+Rel(user, movie, "Makes API calls to", "JSON/HTTPS")
+Rel(user, auth, "Makes API calls to", "JSON/HTTPS")
+Rel(user, ugc, "Makes API calls to", "JSON/HTTPS")
+
+Rel(movie, movie_db, "Reads from and writes to")
+Rel(auth, auth_db, "Reads from and writes to")
+Rel(ugc, ugc_db, "Reads from and writes to")
+
+Rel(movie, ugc_db, "Reads from")
+Rel(ugc, movie_db, "Reads from")
+
+Rel(movie, auth, "Request to access", "JSON/HTTPS")
+Rel(ugc, auth, "Request to access", "JSON/HTTPS")
+
+SHOW_FLOATING_LEGEND()
+
+@enduml

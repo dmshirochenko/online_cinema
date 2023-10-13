@@ -1,0 +1,97 @@
+version: '3'
+
+services:
+
+  ########################
+  ###  MongoDB  ###
+  ########################
+
+  mongo:
+      image: mongo:4.4
+      restart: always
+      ports:
+        - "27017:27017"
+      command: mongod
+      networks:
+      - cinema
+
+  ########################
+  ###      UGC API     ###
+  ########################
+
+  ugc_api:
+    build: ./api_ugc
+    image: ugc_image:latest
+    container_name: ugc_api
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    env_file:
+      - .env
+    ports:
+      - "8003:8000"
+    networks:
+      - cinema
+
+  ########################
+  ###      Logging     ###
+  ########################
+
+  logstash:
+    image: logstash:7.17.10
+    platform: linux/x86_64
+    depends_on:
+      - elasticsearch
+    environment:
+      XPACK_MONITORING_ENABLED: "false"
+      ES_HOST: "elasticsearch:9200"
+    ports:
+      - "5044:5044/udp"
+      - "5046:5046/udp"
+    volumes:
+      - ./api_ugc/deploy/logger/logstash.conf:/config/logstash.conf:ro
+    command: logstash -f /config/logstash.conf
+    networks:
+      - cinema
+
+  elasticsearch:
+    image: elasticsearch:7.17.7
+    environment:
+      discovery.type: single-node
+    ports:
+      - "9201:9200"
+    volumes:
+      - /tmp/esdata:/tmp/elasticsearch/data
+    networks:
+      - cinema
+
+
+  kibana:
+    image: kibana:7.17.10
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - cinema
+
+  filebeat:
+    image: elastic/filebeat:7.17.10
+    platform: linux/x86_64
+    entrypoint: "filebeat -e -strict.perms=false"
+    volumes:
+      - ./api_ugc/deploy/logger/filebeat.yml:/usr/share/filebeat/filebeat.yml
+    depends_on:
+      - ugc_api
+      - logstash
+      - elasticsearch
+      - kibana
+    links:
+      - logstash
+    networks:
+      - cinema
+
+
+networks:
+  cinema:
+    external: true

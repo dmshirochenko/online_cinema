@@ -1,0 +1,66 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor Consumer
+participant UGC
+participant Auth
+'MongoDB as Storage
+database Storage
+
+autonumber
+
+== Add Film in Bookmarks ==
+
+Consumer -> UGC: HTTPS POST bookmarked film by <id>
+
+UGC -> Auth: Authentication Request
+Auth --> UGC: Authentication Response
+
+group successful case
+     UGC -> Storage: Request: Add value in Users History table
+     note left: Value: \n*user_id \n*film_id
+     Storage --> UGC: Response: CREATED
+     UGC --> Consumer: RESP: 200 OK
+
+else no access
+    UGC --> Consumer: RESP: 401 Unauthorized
+
+end
+
+== Get Films from Bookmarks ==
+
+Consumer -> UGC: HTTPS GET bookmarked films
+
+UGC -> Auth: Authentication Request
+Auth --> UGC: Authentication Response
+
+group successful case
+     UGC -> Storage: Request: get film from Users History table
+     note left: get films by: \n*user_id
+     Storage --> UGC: Response: OK
+     UGC --> Consumer: RESP: 200 OK
+
+else no access
+    UGC --> Consumer: RESP: 401 Unauthorized
+
+end
+
+== Delete Film from Bookmarks ==
+
+Consumer -> UGC: HTTPS DELETE bookmarked film by <id>
+
+UGC -> Auth: Authentication Request
+Auth --> UGC: Authentication Response
+
+group successful case
+     UGC -> Storage: Request: delete film from Users History table
+     note left: delete film by: \n*user_id \n*film_id
+     Storage --> UGC: Response: OK
+     UGC --> Consumer: RESP: 200 OK
+
+else no access
+    UGC --> Consumer: RESP: 401 Unauthorized
+
+end
+
+@enduml

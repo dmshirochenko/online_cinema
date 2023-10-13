@@ -1,0 +1,9 @@
+fastapi==0.96.1
+pydantic==1.10.9
+uvicorn==0.22.0
+motor==3.2.0
+python-dotenv==1.0.0
+pytest==7.3.2
+pytest-asyncio==0.21.0
+httpx==0.24.1
+aiohttp==3.8.4
