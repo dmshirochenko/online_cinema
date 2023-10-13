@@ -150,6 +150,42 @@ services:
     networks:
       - cinema
 
+  mongo:
+    image: mongo:4.4
+    restart: always
+    ports:
+      - "27017:27017"
+    command: mongod
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - cinema
+
+  ugc_api:
+    build: ./ugc-service/api_ugc
+    image: ugc_image:latest
+    container_name: ugc_api
+    restart: always
+    entrypoint: >
+      sh -c "./start.sh"
+    env_file:
+      - .env
+    ports:
+      - "8003:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ugc/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - cinema
+
   nginx:
     container_name: nginx
     image: nginx:1.23.2
@@ -163,6 +199,8 @@ services:
       fastapi:
         condition: service_healthy
       auth:
+        condition: service_healthy
+      ugc_api:
         condition: service_healthy
     ports:
       - "80:80"

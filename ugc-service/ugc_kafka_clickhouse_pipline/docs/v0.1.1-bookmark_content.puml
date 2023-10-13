@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor Consumer
+participant UGC
+queue Kafka
+database ClickHouse
+
+autonumber
+
+== Bookmark Film content ==
+
+alt while watching film with film_id
+    Consumer -> UGC: HTTPS POST /bookmark/{film_id}/{timestamp}
+    UGC -> Kafka: Produce Event (topic="bookmarks", event)
+    note left: topic: str \nevent = {\n  "user_id": str \n  "movie_id": str \n  "timestamp": int \n  "time_created": datetime \n}
+    UGC --> Consumer: Message "Bookmark added", 200 OK
+    Kafka -> ClickHouse: Add values in Users Bookmarks table
+    note left: Values: \n*user_id \n*movie_id \n*timestamp \n*time_created
+end
+
+
+@enduml
