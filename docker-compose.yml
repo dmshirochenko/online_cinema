@@ -207,6 +207,26 @@ services:
     networks:
       - cinema
 
+  data_generator:
+    build: ./rec-sys-service/data_generator
+    env_file:
+      - .env
+    depends_on:
+      django:
+        condition: service_healthy
+      fastapi:
+        condition: service_healthy
+      auth:
+        condition: service_healthy
+      ugc_api:
+        condition: service_healthy
+      nginx:
+        condition: service_started
+    networks:
+      - cinema
+
+
+
 volumes:
   cache:
     driver: local
