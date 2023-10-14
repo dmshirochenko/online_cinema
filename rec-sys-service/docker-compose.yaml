@@ -1,0 +1,94 @@
+version: '3'
+
+services:
+  ##############################################
+  ##           GeneralReccomendations         ##
+  ##############################################
+
+  data_generator:
+    build: ./data_generator
+    env_file:
+      - .env.example 
+    networks:
+      - cinema
+
+  general_recs:
+    build: ./general_recs
+    # TODO: Here `depends_on` is not enough, we need to wait
+    # util data_generator does its job to fill test data.
+    volumes:
+      - ./general_recs:/opt/app/code
+    depends_on:
+      - db_ml
+    networks:
+      - cinema
+
+  db_ml:
+      image: redis:6.2-alpine
+      restart: always
+      command: -- port 6380
+      networks:
+        - cinema
+
+  ##############################################
+  ##      Similar Movies Reccomendations     ##
+  ##############################################
+
+  db_recs_similar:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: db_recs_similar
+    command: -- port 6381
+    networks:
+      - cinema
+
+  db_embeddings:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: db_embeddings
+    command: -- port 6382
+    networks:
+      - cinema
+
+  similar_recs:
+    build: ./similar_recs
+    container_name: worker-gen-rec
+    depends_on:
+      - db_embeddings
+      - db_recs_similar
+    networks:
+      - cinema
+
+  ##############################################
+  ##                  API                     ##
+  ##############################################
+
+  cache:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: redis-view_count
+    volumes:
+      - cache:/data
+    networks:
+      - cinema
+    ports:
+      - "16379:6379"
+
+  recsys_service:
+     build: ./api
+     container_name: service-rec-sys
+     restart: always
+     ports:
+       - "8004:8000"
+     depends_on:
+       - cache
+     networks:
+       - cinema
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+  cinema:
+    external: true
