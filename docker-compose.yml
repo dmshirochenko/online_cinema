@@ -248,6 +248,37 @@ services:
     networks:
       - cinema
 
+#similar movies reco
+  db_recs_similar:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: db_recs_similar
+    command: -- port 6381
+    networks:
+      - cinema
+
+  db_embeddings:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: db_embeddings
+    command: -- port 6382
+    networks:
+      - cinema
+
+  similar_recs:
+    build: ./rec-sys-service/similar_recs
+    container_name: worker-gen-rec
+    depends_on:
+      db_embeddings:
+        condition: service_started
+      db_recs_similar:
+        condition: service_started
+      nginx:
+        condition: service_started
+    networks:
+      - cinema
+
+
 #api for recomendations
   cache_reco_api:
     image: redis:6.2-alpine
