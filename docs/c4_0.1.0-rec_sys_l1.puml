@@ -1,0 +1,17 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+
+title [System Context] Online Cinema System
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System(cinema, "Online Cinema System", "Allows customers to search and watch movies and view information about their accounts")
+System(recs, "Recommendation System", "Generates personal movie recommendations")
+
+
+Rel(user, cinema, "Views movies profiles, searches content, watches films and views account profile with customization")
+Rel(cinema, recs, "Get movie recommendations for customer")
+
+SHOW_FLOATING_LEGEND()
+
+@enduml
