@@ -1,4 +1,4 @@
-# Graduation Project: Recommender System
+# Online cinema backend (UGC API, Auth API, Content API, Reco system)
 
 ___________________________
 
