@@ -85,7 +85,7 @@ class RecSysManager:
         """Generate cold recommendation"""
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                f"http://{conf.content_api_url}:8000/{conf.content_api_popular_movies}/",
+                f"http://{conf.content_api_url}:80/{conf.content_api_popular_movies}/",
             ) as response:
                 text = await response.text()
                 json_data = json.loads(text)
@@ -98,7 +98,7 @@ class RecSysManager:
 
     async def _get_movie_info(self, movie_id: str) -> MovieOut:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f"http://{conf.content_api_url}:8000/api/v1/films/{movie_id}") as response:
+            async with session.get(f"http://{conf.content_api_url}:80/api/v1/films/{movie_id}") as response:
                 json_data = await response.json()
 
                 return MovieOut(

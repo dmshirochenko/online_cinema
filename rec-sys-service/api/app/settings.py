@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class AppSettings(BaseSettings):
-    ugc_api_url: str = "ugc"
+    ugc_api_url: str = "ugc_api"
     usc_api_user_viewed_count: str = "api/v1/user_viewed_count"
-    content_api_url: str = "service"
+    content_api_url: str = "service-content"
     content_api_popular_movies: str = "/api/v1/films?sort=-imdb_rating"
     min_stored_actions: int = 10
 
