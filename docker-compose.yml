@@ -207,6 +207,7 @@ services:
     networks:
       - cinema
 
+#data generation
   data_generator:
     build: ./rec-sys-service/data_generator
     env_file:
@@ -225,10 +226,60 @@ services:
     networks:
       - cinema
 
+#general recomendations
+  db_ml:
+      image: redis:6.2-alpine
+      restart: always
+      command: -- port 6380
+      networks:
+        - cinema
 
+  general_recs:
+    build: ./rec-sys-service/general_recs
+    # TODO: Here `depends_on` is not enough, we need to wait
+    # util data_generator does its job to fill test data.
+    volumes:
+      - ./rec-sys-service/general_recs:/opt/app/code
+    depends_on:
+      db_ml:
+        condition: service_started
+      nginx:
+        condition: service_started
+    networks:
+      - cinema
+
+#api for recomendations
+  cache_reco_api:
+    image: redis:6.2-alpine
+    restart: always
+    container_name: redis-view_count
+    volumes:
+      - ./docker_volumes/cache_reco_api:/data
+    networks:
+      - cinema
+    ports:
+      - "16379:6379"
+
+  recsys_service:
+    build: ./rec-sys-service/api
+    container_name: service-rec-sys
+    restart: always
+    ports:
+      - "8004:8000"
+    depends_on:
+      general_recs:
+        condition: service_started
+      nginx:
+        condition: service_started
+      cache_reco_api:
+        condition: service_started
+    networks:
+      - cinema
 
 volumes:
   cache:
+    driver: local
+  cache_reco_api:
     driver: local
 
 networks:
