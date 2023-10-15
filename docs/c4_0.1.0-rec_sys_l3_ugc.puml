@@ -1,0 +1,37 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Component.puml
+
+title [Component] Recommendation System - UGC App
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System_Ext(fe, "FE/BE", "Web application")
+
+Container(recsys, "RecSys App", "Python, FastAPI", "Provides recommendation system functionality")
+ContainerDb(recsys_db, "Recommendation System Storages", "Redis, MongoDB", "Stores all information about movies recommendations")
+
+Container_Boundary(c1, "UGC Application") {
+    Component(fastapi, "UGC API", "Python, FastAPI", "Allows users to provide feedback, etc")
+    Component(etl, "ETL Service", "Python", "Provides functionality related to exporting data from one storage, its transformation and loading into another")
+    ComponentDb(kafka, "OLTP Storage", "Kafka", "Stores information about film watching progress, etc")
+    ComponentDb(storage, "OLAP Storage", "Clickhouse", "Stores information about users activity")
+    ComponentDb(mongo, "Database", "MongoDB", "Stores information about users feedback (likes/dislikes, bookmarks, etc.)")
+}
+
+Rel(user, fe, "Uses", "HTTPS")
+Rel(fe, recsys, "Makes API calls to", "JSON/HTTPS", "Get recommendations")
+Rel_Back(fe, recsys, "Recommended movies profiles", "JSON")
+
+Rel(recsys, fastapi, "Makes API calls to", "JSON/HTTPS")
+Rel_R(recsys, recsys_db, "Reads from and writes to")
+
+Rel(fastapi, kafka, "Produces events to")
+Rel_L(etl, kafka, "Read from")
+Rel_R(etl, storage, "Writes to")
+
+Rel_R(fastapi, mongo, "Writes to/Read from", "BJSON")
+
+SHOW_FLOATING_LEGEND()
+
+@enduml

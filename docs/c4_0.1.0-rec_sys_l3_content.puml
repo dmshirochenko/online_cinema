@@ -1,0 +1,40 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Component.puml
+
+title [Component] Recommendation System - Content App
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System_Ext(fe, "FE/BE", "Web application")
+
+Container(recsys, "RecSys App", "Python, FastAPI", "Provides recommendation system functionality")
+ContainerDb(recsys_db, "Recommendation System Storages", "Redis, MongoDB", "Stores all information about movies recommendations")
+
+Container_Boundary(c1, "Content Application") {
+    Component(fastapi, "Content API", "Python, FastAPI", "Allows to get information about online cinema content")
+    Component(etl, "ETL Service", "Python", "Provides functionality related to exporting data from one storage, its transformation and loading into another")
+    ComponentDb(redis, "Cache", "Redis", "Caches queries results from API to search engine")
+    ComponentDb(elastic, "Search Engine", "ElasticSearch", "Provides a distributed, multitenant-capable full-text search engine of online cinema content")
+    ComponentDb(storage, "Database", "PostgresSQL", "Stores data of online cinema content (films, genres, persons)")
+}
+
+Rel(user, fe, "Uses", "HTTPS")
+Rel(fe, recsys, "Makes API calls to", "JSON/HTTPS", "Get recommendations")
+Rel_Back(fe, recsys, "Recommended movies profiles", "JSON")
+
+Rel(recsys, fastapi, "Makes API calls to", "JSON/HTTPS")
+Rel_R(recsys, recsys_db, "Reads from and writes to")
+
+Rel(fastapi, redis, "Uses", "content_id")
+Rel_Back(fastapi, redis, "Movies profiles", "JSON")
+Rel_R(fastapi, elastic, "Uses", "content_id")
+Rel_Back(fastapi, elastic, "Movies profiles", "JSON")
+Rel_R(redis, elastic, "Reads from")
+Rel_Back(redis, elastic, "Writes to")
+Rel_Back(elastic, etl, "Writes to")
+Rel_R(etl, storage, "Reads from", "SQL/TCP")
+
+SHOW_FLOATING_LEGEND()
+
+@enduml

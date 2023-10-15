@@ -1,0 +1,30 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Component.puml
+
+title [Component] Recommendation System - Authentication and authorization App
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System_Ext(fe, "FE/BE", "Web application")
+
+Container(recsys, "RecSys App", "Python, FastAPI", "Provides recommendation system functionality")
+ContainerDb(recsys_db, "Recommendation System Storages", "Redis, MongoDB", "Stores all information about movies recommendations")
+
+Container_Boundary(c1, "Auth Application") {
+    Component(fastapi, "Auth API", "Python, Flask", "Provides authorization functionality")
+    ComponentDb(storage, "Database", "PostgresSQL", "Stores information about users and user roles")
+}
+
+Rel(user, fe, "Uses", "HTTPS")
+Rel(fe, recsys, "Makes API calls to", "JSON/HTTPS", "Get recommendations")
+Rel_Back(fe, recsys, "Recommended movies profiles", "JSON")
+
+Rel(recsys, fastapi, "Makes API calls to", "JSON/HTTPS")
+Rel_R(recsys, recsys_db, "Reads from and writes to")
+
+Rel_L(fastapi, storage, "Reads from and writes to", "SQL/TCP")
+
+SHOW_FLOATING_LEGEND()
+
+@enduml

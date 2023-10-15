@@ -1,0 +1,72 @@
+@startuml
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/v2.5.0/C4_Component.puml
+
+title [Component] Recommendation System - Recommender System App
+
+AddBoundaryTag("ML", $bgColor="lightcyan", $fontColor="indigo", $borderColor="indigo")
+AddBoundaryTag("Services", $bgColor="lightgray", $fontColor="indigo", $borderColor="indigo")
+
+Person(user, "Customer", "A customer of the Online Cinema with personal account")
+System_Ext(fe, "FE/BE", "Web application")
+
+Container_Boundary(b1, "Recommender System Application") {
+    Component(fastapi, "RecSysAPI", "Python, FastAPI", "Allows to get movies recommendations depends on personal preferences, etc.")
+    Component(gen_res, "Generate results", "Python", "Provides films profiles getting randomly from Result Storage")
+    ComponentDb(storage, "Similar movies IDs", "Redis", "Stores IDs of similar movies for each of movie from Content Service")
+    ComponentDb(mongo, "Embeddings Storage", "MongoDB", "Stores data embeddings")
+    Component(worker, "Internal Worker", "Python", "Updates embedding and movies recommendations (scheduled)")
+
+    Boundary(b2, "ML Component", $type="Launched manually", $tags="ML") {
+        Component(train, "Embedding Trainer", "Python, PyTorch", "Trains ALS model for recommendations generating")
+        Component(data_agg, "Data Aggregator", "Python", "Combines data form different sources and converts it to required format")
+        Component(model, "Trained Models", ".pt, .pkl", "Trained models are stored on disk and loaded to get inference")
+    }
+}
+Boundary(b3, "Data sources", $tags="Services") {
+    Container(content, "Content App", "Python, FastAPI", "Allows to get information about online cinema content")
+    ContainerDb(content_db, "Content Storages", "PostgresSQL, Redis, Elasticsearch", "Stores data of online cinema content (films, genres, persons)")
+
+    Container(auth, "Auth App", "Python, FastAPI", "Provides authorization functionality")
+    ContainerDb(auth_db, "Auth Storages", "PostgresSQL", "Stores information about users and user roles")
+
+    Container(ugc, "UGC App", "Python, FastAPI", "Allows users to provide feedback, etc.")
+    ContainerDb(ugc_db, "UGC Storages", "Kafka, ClickHouse, MongoDB", "Stores information about users feedback (likes/dislikes, bookmarks, etc.)")
+}
+
+Rel(user, fe, "Uses", "HTTPS")
+Rel(fe, fastapi, "Makes API calls to", "JSON/HTTPS", "Get recommendations")
+Rel_Back(fe, fastapi, "Recommended movies profiles", "JSON")
+
+Rel(fastapi, gen_res, "Gets movies profiles")
+Rel_L(gen_res, storage, "Read from")
+
+Rel_R(worker, storage, "Writes to")
+Rel_D(worker, mongo, "Reads from and writes to")
+
+Rel_U(worker, model, "Run inference")
+Rel_R(train, model, "Saves model", ".pt + .pkl")
+Rel_R(data_agg, train, "Prepares data", "Dataframe")
+
+
+Rel_L(content, content_db, "Reads from and writes to")
+Rel_L(auth, auth_db, "Reads from and writes to")
+Rel_L(ugc, ugc_db, "Reads from and writes to")
+
+Lay_D(content, auth)
+Lay_D(auth, ugc)
+
+Lay_D(b3, data_agg)
+
+Rel_L(content, data_agg, " ", "genres, description, persons, etc.")
+Rel_L(auth, data_agg, " ", "age, country, etc.")
+Rel_L(ugc, data_agg, " ", "bookmarks, films in progress, etc.")
+
+Rel_U(b3, gen_res, "IDs of already watched movies")
+
+Lay_D(fastapi, gen_res)
+
+SHOW_FLOATING_LEGEND()
+
+@enduml
