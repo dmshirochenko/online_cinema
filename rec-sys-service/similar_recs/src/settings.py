@@ -14,7 +14,7 @@ class DBSimilarSettings(BaseSettings):
 
 
 class DBContentSettings(BaseSettings):
-    host: str = "http://service:8000"
+    host: str = "http://service-content:80"
 
 
 class Settings(BaseSettings):
