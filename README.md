@@ -12,7 +12,6 @@ Repository: https://github.com/dmshirochenko/online_cinema
   - [Content-based Recommendations](#content-based-recommendations)
   - [Collaborative Recommendations](#collaborative-recommendations)
 - [Getting Started](#getting-started)
-- [The Team](#the-team)
 
 <!-- tocstop -->
 
