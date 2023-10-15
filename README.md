@@ -58,10 +58,10 @@ Combine data from different data sources making resulted recommendations more pe
 Each of services includes README where described specify information and details of installation.
 
 * [Auth service](auth/README.md)
-* [Content service](content_app/README.md)
+* [Content service](content-service/README.md)
 * [Recommender system service](rec-sys-service/api/ReadMe.md)
 * [UGC service](ugc-service/README.md)
-* [ML content-based](ml_recsys/content_based/readme.md)
+* [ML content-based](rec-sys-service/similar_recs/readme.md)
 
 To run all applications as one system [Makefile](Makefile) can be used.
 ```
@@ -72,7 +72,3 @@ To close all applications
 ```
 make down
 ```
-
-## Future Features
-* Implement user-based recommendations
-* Make running of ML training and updating of EmbeddingDB automatically
