@@ -23,6 +23,10 @@ jobs:
     steps:
     - name: Checkout branch
       uses: actions/checkout@v3
-            
+
+    - name: Recreate .env
+      run: |
+        echo "${{ secrets.DOTENV_CONTENT }}" > .env
+
     - name: Running tests
       run: cd content-service/content_api/tests/functional && bash run_tests.sh

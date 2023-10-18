@@ -21,7 +21,7 @@ class ElasticSettings(BaseSettings):
     }
 
     class Config:
-        env_prefix = "ES_TEST_"
+        env_prefix = "ES_"
 
 
 class RedisSettings(BaseSettings):
@@ -29,7 +29,7 @@ class RedisSettings(BaseSettings):
     port: str = "6379"
 
     class Config:
-        env_prefix = "REDIS_TEST_"
+        env_prefix = "REDIS_"
 
 
 test_settings = TestSettings()

@@ -8,7 +8,6 @@ from tests.functional.settings import test_settings
 pytestmark = pytest.mark.asyncio
 
 
-
 async def test_common_search(make_get_request, existing_film: dict, existing_person: dict):
     url = test_settings.service_url + "/api/v1/search"
     query_data = {"query": existing_film["title"]}
