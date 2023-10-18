@@ -53,7 +53,7 @@ services:
     build:
       context: .
     image: content-image-test
-    container_name: content-tests
+    container_name: content_api_tests
     env_file:
       - ../../../../.env
     depends_on:

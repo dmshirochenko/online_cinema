@@ -18,7 +18,7 @@ jobs:
       run: flake8 .
 
 
-  tests:
+  Content API tests:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout branch
