@@ -17,3 +17,12 @@ jobs:
     - name: Run Flake8
       run: flake8 .
 
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v3
+            
+    - name: Running tests
+      run: cd content-service/content_api/tests/functional && bash run_tests.sh

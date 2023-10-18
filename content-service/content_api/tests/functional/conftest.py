@@ -10,6 +10,7 @@ import pytest
 from elasticsearch import Elasticsearch
 from redis import Redis
 
+
 from tests.functional.settings import es_settings, redis_settings, test_settings
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))

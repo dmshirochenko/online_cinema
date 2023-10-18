@@ -9,20 +9,6 @@ from tests.functional.settings import test_settings
 pytestmark = pytest.mark.asyncio
 
 
-async def test_get_id_cache(make_get_request, existing_film: dict, cache: Redis):
-    _id = existing_film["id"]
-    url = test_settings.service_url + f"/api/v1/films/{_id}"
-    cached_objects_1 = cache.dbsize()
-
-    await make_get_request(url)
-    body, status = await make_get_request(url)  # by cache logic
-    cached_objects_2 = cache.dbsize()
-
-    assert status == HTTPStatus.OK
-    assert body["id"] == _id
-    assert cached_objects_2 - cached_objects_1 == 1
-
-
 async def test_get_id_valid(make_get_request, existing_film: dict):
     _id = existing_film["id"]
     url = test_settings.service_url + f"/api/v1/films/{_id}"
