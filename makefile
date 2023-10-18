@@ -13,8 +13,8 @@ stop:
 createsuperuser:
 	docker-compose exec django python manage.py createsuperuser
 async_tests:
-	docker-compose -f fastapi-solution/tests/functional/docker-compose.yml up --build --abort-on-container-exit
-	docker-compose -f fastapi-solution/tests/functional/docker-compose.yml down
+	docker-compose -f content-service/content_api/tests/functional/docker-compose.yml up --build --abort-on-container-exit
+	docker-compose -f content-service/content_api/tests/functional/docker-compose.yml down
 auth_tests:
 	docker-compose -f auth-solution/tests/functional/docker-compose.yml up --build --abort-on-container-exit
 	docker-compose -f auth-solution/tests/functional/docker-compose.yml down

@@ -17,3 +17,16 @@ jobs:
     - name: Run Flake8
       run: flake8 .
 
+
+  content_api_tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout branch
+      uses: actions/checkout@v3
+
+    - name: Recreate .env
+      run: |
+        echo "${{ secrets.DOTENV_CONTENT }}" > .env
+
+    - name: Running tests
+      run: cd content-service/content_api/tests/functional && bash run_tests.sh

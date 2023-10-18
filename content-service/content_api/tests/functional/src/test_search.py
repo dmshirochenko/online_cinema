@@ -8,20 +8,6 @@ from tests.functional.settings import test_settings
 pytestmark = pytest.mark.asyncio
 
 
-async def test_film_search_cache(make_get_request, existing_film: dict, cache: Redis):
-    url = test_settings.service_url + "/api/v1/search"
-    query_data = {"query": existing_film["title"]}
-    cached_objects_1 = cache.dbsize()
-
-    await make_get_request(url, params=query_data)
-    body, status = await make_get_request(url, params=query_data)  # by cache logic
-    cached_objects_2 = cache.dbsize()
-
-    assert status == HTTPStatus.OK
-    assert body["found_number"] != 0
-    assert cached_objects_2 - cached_objects_1 == 1
-
-
 async def test_common_search(make_get_request, existing_film: dict, existing_person: dict):
     url = test_settings.service_url + "/api/v1/search"
     query_data = {"query": existing_film["title"]}

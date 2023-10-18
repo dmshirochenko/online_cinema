@@ -2,40 +2,73 @@ version: '3'
 
 services:
   elastic:
-    image: elasticsearch:7.17.7
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.9.2
     container_name: elastic-tests
-    restart: always
     environment:
       - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cinema_test
 
   cache:
     image: redis:6.2-alpine
-    container_name: cache-tests
-    restart: always
-
-  content_api:
+    container_name: redis-content-test
+    ports:
+      - "6379:6379"
+    volumes:
+      - cache:/data
+    networks:
+      - cinema_test
+  
+  fastapi:
     build: ../../.
-    image: content-image
-    container_name: content_api
-    restart: always
-    entrypoint: >
-      sh -c "./start.sh"
+    container_name: service-content-test
     env_file:
-      - .env
+      - ../../../../.env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent ${FASTAPI_HOST}:${FASTAPI_PORT} -H 'X-Request-Id: healthcheck' >/dev/null || exit 1" ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      elastic:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    ports:
+      - "80:80"
+    expose:
+      - "80"
+    networks:
+      - cinema_test
 
-  tests:
-    image: content-image
-    container_name: content-tests
-    entrypoint: >
-      sh -c "pip install -r tests/functional/requirements.txt
-      && export PYTEST_ADDOPTS="--color=yes"
-      && python3 tests/functional/utils/wait_for_es.py
-      && python3 tests/functional/utils/wait_for_redis.py
-      && pytest tests/functional/src -W ignore::DeprecationWarning"
+  content_api_tests:
+    build:
+      context: .
+    image: content-image-test
+    container_name: content_api_tests
     env_file:
-      - .env
-
+      - ../../../../.env
     depends_on:
       - elastic
       - cache
-      - content_api
+      - fastapi
+    networks:
+      - cinema_test
+
+
+
+volumes:
+  cache:
+    driver: local
+
+networks:
+  cinema_test:
+
