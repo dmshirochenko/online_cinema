@@ -35,5 +35,3 @@ def test_get_most_watched_movies():
     response = httpx.get(f"{base_url}/watched/api/v1/get_most_watched_movies", params={"limit": 10})
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    # We can't check the exact content of the response because it depends on the database state,
-    # but we can check that it's a list (which it should be, according to the endpoint definition).
