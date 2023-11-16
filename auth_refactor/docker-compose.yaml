@@ -1,0 +1,53 @@
+version: '3.9'
+services:
+  auth-postgres:
+    image: postgres:13
+    env_file:
+      - .env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    expose:
+      - 5432
+    volumes:
+      - auth-db:/var/lib/postgresql/data/
+
+  auth-redis:
+    image: redis:7.0.7
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - auth_redis_data:/data
+
+  auth-flask:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    env_file: .env
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --silent ${APP_HOST}:${APP_PORT} >/dev/null || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    ports:
+      - "5000:5000"
+    expose:
+      - 5000
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+      auth-redis:
+        condition: service_healthy
+
+volumes:
+  auth-db:
+  auth_redis_data:
